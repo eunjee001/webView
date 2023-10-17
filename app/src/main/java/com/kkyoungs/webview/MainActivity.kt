@@ -57,14 +57,20 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun HomeScreen(viewModel: MainViewModel){
+    // LocalFocusManager : 여러 컴포저블간 포커싱 이동에 유용하게 사용.
     val focusManager = LocalFocusManager.current
+
+    // remember 은 재구성 과정 전체에서 상태를 유지하는데 도움은 되지만 구성 변경 전반에서는 상태가 유지되지 않는다 --> rememberSaveable 사용
+    // Bundle에 저장할 수 있는 모든 값을 자동으로 저장한다.
 
     val (inputUrl, setUrl) = rememberSaveable{
         mutableStateOf("https://www.google.com")
     }
 
+    //디폴트값 사용한 변수 생성
     val scaffoldState = rememberScaffoldState()
 
+    // Scaffold 는 화면 상태를 기억한다.
     Scaffold(topBar = {
         TopAppBar(title = { Text(text = "나만의 웹브라우져") },
             actions = {
@@ -98,6 +104,7 @@ fun HomeScreen(viewModel: MainViewModel){
         {
             OutlinedTextField(value = inputUrl, onValueChange = setUrl, label = { Text(text = "https://")}, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search), keyboardActions = KeyboardActions(onSearch = {
                 viewModel.url.value = inputUrl
+                // focus 가 사라지면서 자동으로 키보드가 내려간다.
                 focusManager.clearFocus()
             }) )
             Spacer(modifier = Modifier.height(16.dp))
@@ -127,9 +134,11 @@ fun MyWebView(
             if (webView.canGoForward()){
                 webView.goForward()
             }else{
+
                 scaffoldState.snackbarHostState.showSnackbar("더 이상 앞으로 갈 수 없음")
             }
         }
+
     }
     AndroidView(modifier = Modifier.fillMaxSize(), factory = {webView},
         update = {
@@ -142,6 +151,9 @@ fun rememberWebView():WebView{
     val context = LocalContext.current
     val webView = remember {
         WebView(context).apply {
+            // 기본적으로 자바 스크립트는 WebView에서 사용 중지된다. 자바 스크립트는 WebView에 연결된 WebSettings를 통해 사용 설정.
+            // getSetting() 로 WebSettings를 가져온 다음 setJavaScriptEnable()로 자바스크립트를 사용 설정 할 수 있다.
+
             settings.javaScriptEnabled = true
             webViewClient = WebViewClient()
             loadUrl("https://google.com") }
